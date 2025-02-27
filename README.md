@@ -67,5 +67,5 @@ Contribuições são bem-vindas! Para contribuir, siga os passos:
 5. Abra um Pull Request.
 
 ---
-**Desenvolvido por [Seu Nome]** 🚀
+**Desenvolvido por YNF ANTHONY** 🚀
 
