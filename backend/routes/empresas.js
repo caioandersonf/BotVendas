@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
         const connection = await mysql.createConnection({
             host: 'localhost',
             user: 'root',
-            password: '', // Coloque sua senha do MySQL se necessário
+            password: '', 
         });
 
         await connection.query(`CREATE DATABASE IF NOT EXISTS ${banco_dados}`);
@@ -118,7 +118,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({ 
             error: 'Erro ao criar empresa', 
             details: error.message,
-            stack: error.stack  // Exibe a pilha de erro para entender melhor
+            stack: error.stack  
         });
     }    
 });

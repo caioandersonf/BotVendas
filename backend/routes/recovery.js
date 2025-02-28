@@ -6,7 +6,7 @@ const centralDb = require('../config/db');
 
 const router = express.Router();
 
-// Configuração do serviço de email (substitua pelos seus dados)
+// Configuração do serviço de email (Se trocar o email tem que criar a senha de app)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -15,15 +15,15 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// 🔹 Gera um token aleatório para redefinição de senha
+// Gera token de redefinição
 const gerarToken = () => crypto.randomBytes(20).toString('hex');
 
-// 🔹 Solicita a criação da senha (usuário insere o email)
+
 router.post('/solicitar-definicao-senha', async (req, res) => {
     const { email } = req.body;
 
     try {
-        // 🔎 Verifica se o email pertence a alguma empresa
+        //  Verifica se o email pertence a alguma empresa
         const [empresas] = await centralDb.query(`SELECT banco_dados FROM empresas WHERE email = ?`, [email]);
         if (empresas.length === 0) {
             return res.status(404).json({ error: "Email não cadastrado!" });
@@ -31,7 +31,7 @@ router.post('/solicitar-definicao-senha', async (req, res) => {
 
         const banco_dados = empresas[0].banco_dados;
 
-        // Conectar ao banco da empresa para verificar se o usuário existe
+        // Conectar ao banco da empresa para verificar se o usuário existe (depois mudar isso pq não é muito seguro assim)
         const empresaDb = await mysql.createConnection({
             host: 'localhost',
             user: 'root',
@@ -44,7 +44,6 @@ router.post('/solicitar-definicao-senha', async (req, res) => {
             return res.status(404).json({ error: "Usuário não encontrado na empresa!" });
         }
 
-        // 🔹 Gerar token para redefinição de senha
         const token = gerarToken();
         const expiracao = new Date(Date.now() + 3600000); // Token expira em 1 hora
 
@@ -65,7 +64,7 @@ router.post('/solicitar-definicao-senha', async (req, res) => {
             [email, token, expiracao]
         );
 
-        // 🔹 Enviar email com o link de redefinição
+        // Enviar email com o link de redefinição
         const resetLink = `http://localhost:3000/definir-senha?token=${token}&banco=${banco_dados}`;
 
         const mailOptions = {
@@ -84,7 +83,7 @@ router.post('/solicitar-definicao-senha', async (req, res) => {
     }
 });
 
-// 🔹 Rota para definir uma nova senha
+// Rota para definir uma nova senha
 router.post('/definir-senha', async (req, res) => {
     const { token, banco, novaSenha } = req.body;
 
@@ -113,7 +112,7 @@ router.post('/definir-senha', async (req, res) => {
 
         const email = tokens[0].email;
 
-        // Atualiza a senha no banco da empresa (Aqui estou assumindo que a senha é salva sem hash. Se tiver hash, aplique bcrypt)
+        // Atualiza a senha no banco da empresa
         await empresaDb.query(
             `UPDATE usuarios SET senha = ? WHERE email = ?`, 
             [novaSenha, email]
