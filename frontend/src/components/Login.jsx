@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [senha, setSenha] = useState("");
     const [mensagem, setMensagem] = useState("");
+    const navigate = useNavigate(); // Para redirecionamento
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -12,9 +14,7 @@ const Login = () => {
         try {
             const response = await fetch("http://localhost:5000/api/login", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, senha }),
             });
 
@@ -23,6 +23,12 @@ const Login = () => {
             if (response.ok) {
                 setMensagem("Login realizado com sucesso!");
                 console.log("Usuário logado:", data.usuario);
+
+                // Salvar no localStorage para persistência
+                localStorage.setItem("usuario", JSON.stringify(data.usuario));
+
+                // Redirecionar para o dashboard
+                navigate("/dashboard");
             } else {
                 setMensagem(data.error || "Erro ao fazer login");
             }
@@ -51,10 +57,7 @@ const Login = () => {
                     className="border p-2 rounded mb-3"
                     required
                 />
-                <button
-                    type="submit"
-                    className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
-                >
+                <button type="submit" className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition">
                     Entrar
                 </button>
                 {mensagem && <p className="text-red-500 mt-3">{mensagem}</p>}

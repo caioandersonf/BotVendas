@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../config/db');
+const { centralDb, getConnection } = require('../config/db'); // Importando corretamente
 const router = express.Router();
 
 router.post('/login', async (req, res) => {
@@ -14,15 +14,15 @@ router.post('/login', async (req, res) => {
 
         // Verifica se `centralDb` está definido corretamente
         console.log("🔹 Verificando conexão com o banco central...");
-        if (!db.centralDb || typeof db.centralDb.query !== 'function') {
+        if (!centralDb || typeof centralDb.query !== 'function') {
             console.error("❌ ERRO: Conexão com o banco central não foi inicializada corretamente.");
             return res.status(500).json({ error: "Erro interno no servidor ao acessar o banco central" });
         }
 
         // Buscar a empresa pelo email no banco central
-        const [empresas] = await db.centralDb.query(
-            `SELECT banco_dados FROM empresas WHERE email = ?`, [email]
-        );
+        const [empresas] = await centralDb.query(
+            `SELECT banco_dados, nome, proprietario FROM empresas WHERE email = ?`, [email]
+        );        
 
         if (empresas.length === 0) {
             console.log("❌ Empresa não encontrada:", email);
@@ -34,7 +34,7 @@ router.post('/login', async (req, res) => {
 
         // Conectar ao banco da empresa
         console.log("🔹 Tentando conectar ao banco da empresa...");
-        const empresaDb = await db.getConnection(banco_dados);
+        const empresaDb = await getConnection(banco_dados);
 
         if (!empresaDb || typeof empresaDb.query !== 'function') {
             console.error("❌ ERRO: Falha ao conectar ao banco da empresa.");
@@ -62,7 +62,16 @@ router.post('/login', async (req, res) => {
         }
 
         console.log("✅ Login bem-sucedido!");
-        res.json({ message: "Login realizado com sucesso!", usuario });
+        res.json({ 
+            message: "Login realizado com sucesso!", 
+            usuario: {
+                id: usuario.id,
+                email: usuario.email,
+                nome: empresas[0].nome, 
+                proprietario: empresas[0].proprietario, 
+                criado_em: usuario.criado_em
+            } 
+        });
     } catch (error) {
         console.error("❌ Erro ao fazer login:", error);
         res.status(500).json({ error: "Erro ao processar o login" });

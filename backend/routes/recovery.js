@@ -2,7 +2,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
-const centralDb = require('../config/db');
+const { centralDb } = require('../config/db');
 
 const router = express.Router();
 

@@ -2,7 +2,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const router = express.Router();
 
-const centralDb = require('../config/db');
+const { centralDb } = require('../config/db');
 
 router.get('/', async (req, res) => {
     try {
