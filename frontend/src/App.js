@@ -5,6 +5,8 @@ import RecuperarSenha from './components/RecuperarSenha';
 import DefinirSenha from './components/DefinirSenha';
 import Login from './components/Login';
 import Dashboard from "./components/Dashboard";
+import Estoque from "./components/Estoque";
+import CadastrarItem from "./components/CadastrarItem";
 
 const App = () => {
     return (
@@ -15,6 +17,8 @@ const App = () => {
                 <Route path="/definir-senha" element={<DefinirSenha />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/estoque" element={<Estoque />} />
+                <Route path="/cadastrar-item" element={<CadastrarItem />} />
             </Routes>
         </BrowserRouter>
     );

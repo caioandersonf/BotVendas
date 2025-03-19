@@ -84,16 +84,13 @@ router.post('/', async (req, res) => {
             CREATE TABLE IF NOT EXISTS estoque (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nome VARCHAR(255) NOT NULL,
-                descricao TEXT DEFAULT NULL,
-                quantidade INT NOT NULL DEFAULT 0,
-                valor DECIMAL(10,2) NOT NULL,
-                tipo VARCHAR(50) DEFAULT NULL, -- Ex: "Eletrônico", "Roupas", "Alimentos"
-                codigo_sku VARCHAR(50) UNIQUE DEFAULT NULL, -- Código único do produto
-                imagem_url VARCHAR(255) DEFAULT NULL,
+                quantidade INT NOT NULL,
+                preco DECIMAL(10,2) NOT NULL,
+                campos_extras JSON NULL,
                 criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        console.log("✅ Tabela 'clientes' criada!");
+        console.log("✅ Tabela 'Estoque' criada!");
 
         await empresaDb.query(`
             CREATE TABLE IF NOT EXISTS pedidos (

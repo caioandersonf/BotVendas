@@ -1,7 +1,3 @@
-Ótima ideia! Vamos organizar tudo para que você consiga **inicializar o sistema rapidamente** e também **fornecer os arquivos certos para qualquer pessoa acompanhar o desenvolvimento**.
-
----
-
 ## ✅ **1. Códigos para inicializar o sistema**
 Sempre que quiser rodar o sistema, siga estes passos no terminal:
 
@@ -61,31 +57,3 @@ Para alguém te ajudar, eles precisam dos **arquivos principais do backend e fro
 - `frontend/public/index.html` – Estrutura básica do React.
 
 ---
-
-## ✅ **3. Como compartilhar o código com outra pessoa**
-### 🔹 **1. Criar um repositório no GitHub**
-Se ainda não tem um repositório, siga estes passos:
-1. Vá para [GitHub](https://github.com/) e crie um novo repositório.
-2. No terminal, dentro do projeto, rode:
-   ```bash
-   git init
-   git add .
-   git commit -m "Projeto inicial"
-   git branch -M main
-   git remote add origin https://github.com/SEU_USUARIO/NOME_DO_REPO.git
-   git push -u origin main
-   ```
-   Depois, é só compartilhar o link do GitHub.
-
----
-
-### 🔹 **2. Criar um arquivo ZIP**
-Se quiser enviar os arquivos manualmente:
-1. Compacte **apenas os arquivos do código** (exclua `node_modules`).
-2. Envie para quem for ajudar.
-
----
-
-Agora você tem tudo organizado para **rodar, compartilhar e desenvolver o projeto com eficiência!** 🚀🔥  
-
-Se precisar de mais alguma coisa, só me chamar! 😃
