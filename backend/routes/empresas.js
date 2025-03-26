@@ -20,8 +20,25 @@ router.post('/', async (req, res) => {
         const {
             nome, email, telefone, proprietario, tipo_negocio, localizacao, banco_dados, cnpj_cpf,
             horario_abertura, horario_fechamento, formas_pagamento, plano_ativo, status_empresa,
-            instagram, whatsapp, site, descricao, logo_url, observacoes
+            instagram, whatsapp, site, descricao, observacoes
         } = req.body;
+
+        const estruturaEstoquePorTipo = {
+            'Loja de Roupas': `
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nome VARCHAR(255) NOT NULL,
+                tipo_produto VARCHAR(100),
+                tamanhos VARCHAR(100),
+                cor VARCHAR(50),
+                marca VARCHAR(100),
+                genero ENUM('Masculino', 'Feminino', 'Unissex'),
+                categoria VARCHAR(100),
+                preco DECIMAL(10,2) NOT NULL,
+                quantidade INT NOT NULL,
+                imagem_url TEXT,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            `,
+        }
 
         console.log("🔹 Validando entrada de dados...");
 
@@ -31,18 +48,22 @@ router.post('/', async (req, res) => {
 
         console.log(`🔹 Banco gerado: ${banco_dados}`);
 
+        console.log("🧠 Tipo de negócio recebido:", tipo_negocio);
+        console.log("🔍 Tipos disponíveis:", Object.keys(estruturaEstoquePorTipo));
+        
+
         console.log("🔹 Inserindo empresa no banco central...");
         await centralDb.query(
             `INSERT INTO empresas 
             (nome, email, telefone, proprietario, tipo_negocio, localizacao, banco_dados, cnpj_cpf, 
             instagram, whatsapp, site, descricao, horario_funcionamento, formas_pagamento, 
-            plano_ativo, status_empresa, logo_url, observacoes) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            plano_ativo, status_empresa, observacoes) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 nome, email, telefone, proprietario, tipo_negocio, localizacao, banco_dados, cnpj_cpf,
                 instagram, whatsapp, site, descricao, 
                 `${horario_abertura} - ${horario_fechamento}`, JSON.stringify(formas_pagamento), 
-                plano_ativo, status_empresa, logo_url, observacoes
+                plano_ativo, status_empresa, observacoes
             ]
         );        
         
@@ -80,16 +101,27 @@ router.post('/', async (req, res) => {
         await empresaDb.query(`INSERT INTO usuarios (email) VALUES (?)`, [email]);
         console.log(`✅ Email '${email}' salvo na tabela 'usuarios' da empresa!`);        
 
-        await empresaDb.query(`
-            CREATE TABLE IF NOT EXISTS estoque (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nome VARCHAR(255) NOT NULL,
-                quantidade INT NOT NULL,
-                preco DECIMAL(10,2) NOT NULL,
-                campos_extras JSON NULL,
-                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
+        const tipoPadronizado = tipo_negocio?.trim();
+        const estruturaEstoque = estruturaEstoquePorTipo[tipoPadronizado];
+
+        if (estruturaEstoque) {
+            const sqlCreate = `CREATE TABLE IF NOT EXISTS estoque (${estruturaEstoque})`;
+            console.log("📦 SQL da tabela estoque:", sqlCreate); // debug opcional
+            await empresaDb.query(sqlCreate);
+            console.log(`✅ Tabela 'estoque' criada para o tipo '${tipoPadronizado}'!`);
+        } else {
+            await empresaDb.query(`
+                CREATE TABLE IF NOT EXISTS estoque (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    nome VARCHAR(255) NOT NULL,
+                    quantidade INT NOT NULL,
+                    preco DECIMAL(10,2) NOT NULL,
+                    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
+            console.log("⚠️ Tipo de negócio não mapeado. Tabela 'estoque' criada com estrutura padrão.");
+        }
+
         console.log("✅ Tabela 'Estoque' criada!");
 
         await empresaDb.query(`
