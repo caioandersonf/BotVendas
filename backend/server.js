@@ -10,7 +10,9 @@ app.use(express.json());
 
 app.use('/api/empresas', empresasRoutes);
 app.use('/api/recovery', recoveryRoutes);
-app.use('/api', loginRoutes); 
+app.use('/api', loginRoutes);
+app.use('/api/estoque', require('./routes/estoqueCampos'));
+
 
 const PORT = 5000;
 app.listen(PORT, () => {

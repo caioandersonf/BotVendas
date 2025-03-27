@@ -69,9 +69,11 @@ router.post('/login', async (req, res) => {
                 email: usuario.email,
                 nome: empresas[0].nome, 
                 proprietario: empresas[0].proprietario, 
+                banco_dados: empresas[0].banco_dados,
+                tipo_negocio: empresas[0].tipo_negocio,
                 criado_em: usuario.criado_em
             } 
-        });
+        });        
     } catch (error) {
         console.error("❌ Erro ao fazer login:", error);
         res.status(500).json({ error: "Erro ao processar o login" });
