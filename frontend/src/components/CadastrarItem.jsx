@@ -17,11 +17,17 @@ const CadastrarItem = () => {
     }, []);
 
     const handleCadastro = async () => {
+        const usuario = JSON.parse(localStorage.getItem("usuario"));
+        const itemCompleto = {
+            banco_dados: usuario.banco_dados,
+            ...novoItem
+        };
+    
         try {
             const response = await fetch("http://localhost:5000/api/estoque", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(novoItem)
+                body: JSON.stringify(itemCompleto)
             });
             if (response.ok) {
                 navigate("/estoque");
@@ -31,7 +37,7 @@ const CadastrarItem = () => {
         } catch (error) {
             console.error("Erro na requisição de cadastro:", error);
         }
-    };
+    };    
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
