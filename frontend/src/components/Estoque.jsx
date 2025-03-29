@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 const Estoque = () => {
     const [colunas, setColunas] = useState([]);
     const [dados, setDados] = useState([]);
+    const [camposFiltraveis, setCamposFiltraveis] = useState([]);
+    const [filtros, setFiltros] = useState({});
     const [busca, setBusca] = useState("");
     const navigate = useNavigate();
 
@@ -11,17 +13,23 @@ const Estoque = () => {
         buscarEstoque();
     }, []);
 
-    const buscarEstoque = () => {
+    const buscarEstoque = async () => {
         const usuario = JSON.parse(localStorage.getItem("usuario"));
-        if (usuario?.banco_dados) {
-            fetch(`http://localhost:5000/api/estoque?banco_dados=${usuario.banco_dados}`)
-                .then(res => res.json())
-                .then(({ colunas, dados }) => {
-                    setColunas(colunas.filter(col => col !== "id"));
-                    setDados(dados);
-                })
-                .catch(err => console.error("Erro ao buscar estoque:", err));
-        }
+        if (!usuario?.banco_dados) return;
+
+        const resEstoque = await fetch(`http://localhost:5000/api/estoque?banco_dados=${usuario.banco_dados}`);
+        const { colunas, dados } = await resEstoque.json();
+
+        setColunas(colunas.filter(col => col !== "id"));
+        setDados(dados);
+
+        const resCampos = await fetch(`http://localhost:5000/api/estoque/campos?banco_dados=${usuario.banco_dados}`);
+        const campos = await resCampos.json();
+
+        const camposExcluidos = ["id", "imagem", "preco", "quantidade", "criado_em"];
+        const filtraveis = campos.filter(c => !camposExcluidos.includes(c.nome));
+
+        setCamposFiltraveis(filtraveis);
     };
 
     const handleExcluir = async (id) => {
@@ -31,75 +39,161 @@ const Estoque = () => {
                 const res = await fetch(`http://localhost:5000/api/estoque/${id}?banco_dados=${usuario.banco_dados}`, {
                     method: "DELETE"
                 });
-                if (res.ok) {
-                    buscarEstoque();
-                } else {
-                    console.error("Erro ao excluir");
-                }
+                if (res.ok) buscarEstoque();
             } catch (err) {
                 console.error("Erro ao excluir:", err);
             }
         }
     };
 
+    const handleFiltroChange = (campo, valor) => {
+        setFiltros(prev => ({
+            ...prev,
+            [campo]: valor
+        }));
+    };
+
     const formatarCampo = (coluna, valor) => {
         if (coluna === "preco") return `R$ ${parseFloat(valor).toFixed(2)}`;
-        if (coluna === "criado_em") return new Date(valor).toLocaleString("pt-BR") || "-";
-        if (coluna === "imagem" && valor)
+        if (coluna === "criado_em") return new Date(valor).toLocaleString("pt-BR");
+        if (coluna === "imagem" && valor) {
             return (
                 <img
                     src={`http://localhost:5000/uploads/${valor}`}
                     alt="Produto"
-                    className="w-16 h-16 object-cover rounded shadow"
+                    style={{
+                        width: "80px",
+                        height: "80px",
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
+                    }}
                 />
             );
+        }
         return valor || "-";
     };
 
-    const dadosFiltrados = dados.filter(item =>
-        item.nome?.toLowerCase().includes(busca.toLowerCase())
-    );
+    const dadosFiltrados = dados.filter(item => {
+        const buscaNome = item.nome?.toLowerCase().includes(busca.toLowerCase());
+
+        const filtrosAtendidos = Object.entries(filtros).every(([campo, valor]) => {
+            if (!valor) return true;
+            return String(item[campo]) === String(valor);
+        });
+
+        return buscaNome && filtrosAtendidos;
+    });
+
+    const opcoesUnicas = (campo) => {
+        const unicos = new Set(dados.map(d => d[campo]).filter(Boolean));
+        return Array.from(unicos);
+    };
 
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen bg-gray-100 p-8">
-            <h2 className="text-4xl font-bold mb-6 text-gray-800">📦 Estoque</h2>
+        <div className="admin-container">
+            <h2>📦 Estoque</h2>
 
-            <input
-                type="text"
-                placeholder="Buscar por nome..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                className="mb-6 px-4 py-2 border rounded-md w-full max-w-md shadow-sm"
-            />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginBottom: "20px" }}>
+                <input
+                    type="text"
+                    placeholder="Buscar por nome..."
+                    value={busca}
+                    onChange={(e) => setBusca(e.target.value)}
+                    style={{
+                        padding: "10px",
+                        border: "1px solid #5A5E7A",
+                        borderRadius: "8px",
+                        backgroundColor: "#252545",
+                        color: "#B0B3C0",
+                        flex: "1",
+                        minWidth: "200px"
+                    }}
+                />
 
-            <div className="overflow-x-auto w-full max-w-6xl">
-                <table className="w-full bg-white shadow-md rounded-lg overflow-hidden border">
-                    <thead className="bg-blue-100 text-gray-700">
+                {camposFiltraveis.map((campo, i) => (
+                    <select
+                        key={i}
+                        onChange={e => handleFiltroChange(campo.nome, e.target.value)}
+                        value={filtros[campo.nome] || ""}
+                        style={{
+                            padding: "10px",
+                            border: "1px solid #5A5E7A",
+                            borderRadius: "8px",
+                            backgroundColor: "#252545",
+                            color: "#B0B3C0",
+                            minWidth: "150px"
+                        }}
+                    >
+                        <option value="">{campo.nome}</option>
+                        {opcoesUnicas(campo.nome).map((op, idx) => (
+                            <option key={idx} value={op}>{op}</option>
+                        ))}
+                    </select>
+                ))}
+            </div>
+
+            <div style={{ overflowX: "auto", width: "100%" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", color: "#ffffff" }}>
+                    <thead>
                         <tr>
                             {colunas.map((col, i) => (
-                                <th key={i} className="px-4 py-3 border-b capitalize text-left">{col.replace("_", " ")}</th>
+                                <th
+                                    key={i}
+                                    style={{
+                                        padding: "12px",
+                                        backgroundColor: "#1f1f3b",
+                                        borderBottom: "2px solid #444",
+                                        textAlign: "left",
+                                        textTransform: "capitalize"
+                                    }}
+                                >
+                                    {col.replace("_", " ")}
+                                </th>
                             ))}
-                            <th className="px-4 py-3 border-b">Ações</th>
+                            <th style={{ padding: "12px", backgroundColor: "#1f1f3b", borderBottom: "2px solid #444" }}>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
                         {dadosFiltrados.map((item, i) => (
-                            <tr key={i} className="hover:bg-gray-100 transition">
+                            <tr key={i} style={{ borderBottom: "1px solid #333" }}>
                                 {colunas.map((col, j) => (
-                                    <td key={j} className="px-4 py-2 border-b text-sm text-gray-700">
-                                        {formatarCampo(col, item[col])}
+                                    <td key={j} style={{
+                                        padding: "10px",
+                                        color: col === "quantidade" && item[col] <= 3 ? "#ff4d4d" : "#ffffff",
+                                        fontWeight: col === "quantidade" && item[col] <= 3 ? "bold" : "normal"
+                                    }}>
+                                        {col === "quantidade" && item[col] <= 3
+                                        ? `⚠️ ${item[col]}`
+                                        : formatarCampo(col, item[col])
+                                        }
                                     </td>
                                 ))}
-                                <td className="px-4 py-2 border-b flex gap-2">
+                                <td style={{ padding: "10px" }}>
                                     <button
                                         onClick={() => navigate(`/editar-item/${item.id}`)}
-                                        className="px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-sm"
+                                        style={{
+                                            marginRight: "10px",
+                                            backgroundColor: "#FFD700",
+                                            color: "#000",
+                                            padding: "6px 12px",
+                                            borderRadius: "5px",
+                                            border: "none",
+                                            cursor: "pointer"
+                                        }}
                                     >
                                         Editar
                                     </button>
                                     <button
                                         onClick={() => handleExcluir(item.id)}
-                                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                                        style={{
+                                            backgroundColor: "#FF3B30",
+                                            color: "#fff",
+                                            padding: "6px 12px",
+                                            borderRadius: "5px",
+                                            border: "none",
+                                            cursor: "pointer"
+                                        }}
                                     >
                                         Excluir
                                     </button>
@@ -109,23 +203,22 @@ const Estoque = () => {
                     </tbody>
                 </table>
             </div>
-
-            <div className="flex gap-4 mt-8">
+            <div style={{ display: "flex", gap: "20px", marginTop: "30px" }}>
                 <button
                     onClick={() => navigate("/cadastrar-item")}
-                    className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+                    className="btn-cadastrar"
                 >
                     ➕ Cadastrar Novo Item
                 </button>
                 <button
                     onClick={() => navigate("/dashboard")}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                    className="btn-voltar"
                 >
                     🔙 Voltar ao Dashboard
                 </button>
-            </div>
-        </div>
-    );
-};
+                </div>
 
+                        </div>
+                    );
+                };
 export default Estoque;

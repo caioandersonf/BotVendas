@@ -302,3 +302,33 @@ textarea[name="observacoes"] {
     color: #007bff;
     font-weight: 500;
 }
+
+.btn-cadastrar {
+    background-color: #7F25FB;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-cadastrar:hover {
+    background-color: #5e19c8;
+}
+
+.btn-voltar {
+    background-color: #34495e;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-voltar:hover {
+    background-color: #2c3e50;
+}
