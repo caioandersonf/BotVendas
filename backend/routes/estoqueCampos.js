@@ -2,6 +2,20 @@
 const express = require("express");
 const mysql = require("mysql2/promise");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+// Pasta de uploads
+const uploadDir = path.join(__dirname, "..", "uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+// Configuração do multer
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+});
+const upload = multer({ storage });
 
 router.get("/campos", async (req, res) => {
     const banco_dados = req.query.banco_dados;
@@ -36,12 +50,13 @@ router.get("/campos", async (req, res) => {
     }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", upload.single("imagem"), async (req, res) => {
     const { banco_dados, ...item } = req.body;
 
-    if (!banco_dados) {
-        return res.status(400).json({ error: "Banco de dados não informado" });
-    }
+    if (!banco_dados) return res.status(400).json({ error: "Banco de dados não informado" });
+
+    // Adiciona nome do arquivo da imagem, se existir
+    if (req.file) item.imagem = req.file.filename;
 
     try {
         const conn = await mysql.createConnection({
@@ -147,11 +162,13 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", upload.single("imagem"), async (req, res) => {
     const { id } = req.params;
     const { banco_dados, ...dados } = req.body;
 
     if (!banco_dados) return res.status(400).json({ error: "Banco de dados não informado" });
+
+    if (req.file) dados.imagem = req.file.filename;
 
     try {
         const conn = await mysql.createConnection({

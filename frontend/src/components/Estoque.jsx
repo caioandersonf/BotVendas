@@ -44,8 +44,16 @@ const Estoque = () => {
 
     const formatarCampo = (coluna, valor) => {
         if (coluna === "preco") return `R$ ${parseFloat(valor).toFixed(2)}`;
-        if (coluna === "criado_em") return new Date(valor).toLocaleString("pt-BR");
-        return valor;
+        if (coluna === "criado_em") return new Date(valor).toLocaleString("pt-BR") || "-";
+        if (coluna === "imagem" && valor)
+            return (
+                <img
+                    src={`http://localhost:5000/uploads/${valor}`}
+                    alt="Produto"
+                    className="w-16 h-16 object-cover rounded shadow"
+                />
+            );
+        return valor || "-";
     };
 
     const dadosFiltrados = dados.filter(item =>

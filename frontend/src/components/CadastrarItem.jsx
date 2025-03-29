@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 const CadastrarItem = () => {
     const [camposEstoque, setCamposEstoque] = useState([]);
     const [novoItem, setNovoItem] = useState({});
+    const [imagem, setImagem] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,17 +19,25 @@ const CadastrarItem = () => {
 
     const handleCadastro = async () => {
         const usuario = JSON.parse(localStorage.getItem("usuario"));
-        const itemCompleto = {
-            banco_dados: usuario.banco_dados,
-            ...novoItem
-        };
-    
+        const formData = new FormData();
+
+        // Adiciona campos dinâmicos
+        Object.keys(novoItem).forEach(chave => {
+            formData.append(chave, novoItem[chave]);
+        });
+
+        // Adiciona banco e imagem
+        formData.append("banco_dados", usuario.banco_dados);
+        if (imagem) {
+            formData.append("imagem", imagem);
+        }
+
         try {
             const response = await fetch("http://localhost:5000/api/estoque", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(itemCompleto)
+                body: formData
             });
+
             if (response.ok) {
                 navigate("/estoque");
             } else {
@@ -37,7 +46,7 @@ const CadastrarItem = () => {
         } catch (error) {
             console.error("Erro na requisição de cadastro:", error);
         }
-    };    
+    };
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
@@ -56,6 +65,14 @@ const CadastrarItem = () => {
                         className="w-full p-2 border rounded-md mb-2"
                     />
                 ))}
+
+                {/* Upload de imagem */}
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImagem(e.target.files[0])}
+                    className="w-full p-2 border rounded-md mb-2"
+                />
 
                 <button
                     onClick={handleCadastro}

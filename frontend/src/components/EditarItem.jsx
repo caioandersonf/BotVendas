@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 const EditarItem = () => {
     const [campos, setCampos] = useState([]);
     const [item, setItem] = useState({});
+    const [novaImagem, setNovaImagem] = useState(null);
     const navigate = useNavigate();
     const { id } = useParams();
 
@@ -11,7 +12,7 @@ const EditarItem = () => {
         const usuario = JSON.parse(localStorage.getItem("usuario"));
         if (!usuario?.banco_dados) return;
 
-        // Buscar estrutura dos campos
+        // Buscar campos
         fetch(`http://localhost:5000/api/estoque/campos?banco_dados=${usuario.banco_dados}`)
             .then(res => res.json())
             .then(setCampos);
@@ -24,16 +25,22 @@ const EditarItem = () => {
 
     const handleEditar = async () => {
         const usuario = JSON.parse(localStorage.getItem("usuario"));
-        const body = {
-            banco_dados: usuario.banco_dados,
-            ...item
-        };
+        const formData = new FormData();
+
+        for (const key in item) {
+            formData.append(key, item[key]);
+        }
+
+        formData.append("banco_dados", usuario.banco_dados);
+
+        if (novaImagem) {
+            formData.append("imagem", novaImagem);
+        }
 
         try {
             const res = await fetch(`http://localhost:5000/api/estoque/${id}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
+                body: formData
             });
 
             if (res.ok) {
@@ -63,6 +70,22 @@ const EditarItem = () => {
                         className="w-full p-2 border rounded-md mb-3"
                     />
                 ))}
+
+                {item.imagem && (
+                    <img
+                        src={`http://localhost:5000/uploads/${item.imagem}`}
+                        alt="Imagem atual"
+                        className="w-full h-40 object-contain mb-3 rounded"
+                    />
+                )}
+
+                {/* Upload de nova imagem */}
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setNovaImagem(e.target.files[0])}
+                    className="w-full p-2 border rounded-md mb-3"
+                />
 
                 <button
                     onClick={handleEditar}
