@@ -1,0 +1,97 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #7e22ce, #312e81); /* roxinho bonitão */
+    color: #fff;
+    text-align: center;
+  }
+  
+  .dashboard-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  .dashboard-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  .dashboard-button {
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    color: #fff;
+  }
+  
+  .dashboard-button.pedidos {
+    background-color: #2563eb;
+  }
+  .dashboard-button.pedidos:hover {
+    background-color: #1d4ed8;
+  }
+  
+  .dashboard-button.estoque {
+    background-color: #22c55e;
+  }
+  .dashboard-button.estoque:hover {
+    background-color: #16a34a;
+  }
+  
+  .dashboard-button.sair {
+    background-color: #ef4444;
+  }
+  .dashboard-button.sair:hover {
+    background-color: #dc2626;
+  }
+
+  .indicadores {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .indicador-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    color: #fff;
+    min-width: 150px;
+    text-align: center;
+  }
+  
+  .indicador-card h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  .indicador-card p {
+    margin-top: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  .indicador-card p {
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  

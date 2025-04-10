@@ -211,8 +211,18 @@ router.get("/indicadores", async (req, res) => {
         await conn.end();
 
         const totalProdutos = dados.length;
-        const totalQuantidade = dados.reduce((acc, item) => acc + (item.quantidade || 0), 0);
-        const totalValor = dados.reduce((acc, item) => acc + ((item.preco || 0) * (item.quantidade || 0)), 0);
+
+        const totalQuantidade = dados.reduce((acc, item) => {
+            const quantidade = Number(item.quantidade);
+            return acc + (isNaN(quantidade) ? 0 : quantidade);
+        }, 0);
+
+        const totalValor = dados.reduce((acc, item) => {
+            const preco = Number(item.preco);
+            const quantidade = Number(item.quantidade);
+            const valorItem = (!isNaN(preco) && !isNaN(quantidade)) ? preco * quantidade : 0;
+            return acc + valorItem;
+        }, 0);
 
         res.json({
             totalProdutos,
