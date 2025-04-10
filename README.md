@@ -28,7 +28,7 @@ O sistema é dividido em três camadas principais:
 
 ### 1️⃣ Clone o Repositório
 ```bash
-git clone https://github.com/seu-usuario/bot-vendas.git
+git clone https://github.com/Anthony17DEV/bot-vendas.git
 cd bot-vendas
 ```
 
