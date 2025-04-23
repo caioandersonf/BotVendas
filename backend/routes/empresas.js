@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nome VARCHAR(255) NOT NULL,
                 tipo_produto VARCHAR(100),
-                tamanhos VARCHAR(100),
+                tamanho VARCHAR(100),
                 cor VARCHAR(50),
                 marca VARCHAR(100),
                 genero ENUM('Masculino', 'Feminino', 'Unissex'),
@@ -51,7 +51,6 @@ router.post('/', async (req, res) => {
 
         console.log("🧠 Tipo de negócio recebido:", tipo_negocio);
         console.log("🔍 Tipos disponíveis:", Object.keys(estruturaEstoquePorTipo));
-        
 
         console.log("🔹 Inserindo empresa no banco central...");
         await centralDb.query(
@@ -67,7 +66,7 @@ router.post('/', async (req, res) => {
                 plano_ativo, status_empresa, observacoes
             ]
         );        
-        
+
         console.log("✅ Empresa cadastrada no banco central!");
 
         console.log(`🔹 Criando banco de dados '${banco_dados}'...`);
@@ -93,12 +92,12 @@ router.post('/', async (req, res) => {
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 email VARCHAR(255) UNIQUE NOT NULL,
-                senha VARCHAR(255) DEFAULT NULL, -- Começa sem senha
+                senha VARCHAR(255) DEFAULT NULL,
                 criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
         console.log("✅ Tabela 'usuarios' criada no banco da empresa!");
-        
+
         await empresaDb.query(`INSERT INTO usuarios (email) VALUES (?)`, [email]);
         console.log(`✅ Email '${email}' salvo na tabela 'usuarios' da empresa!`);        
 
@@ -107,7 +106,7 @@ router.post('/', async (req, res) => {
 
         if (estruturaEstoque) {
             const sqlCreate = `CREATE TABLE IF NOT EXISTS estoque (${estruturaEstoque})`;
-            console.log("📦 SQL da tabela estoque:", sqlCreate); // debug opcional
+            console.log("📦 SQL da tabela estoque:", sqlCreate);
             await empresaDb.query(sqlCreate);
             console.log(`✅ Tabela 'estoque' criada para o tipo '${tipoPadronizado}'!`);
         } else {
@@ -118,6 +117,7 @@ router.post('/', async (req, res) => {
                     quantidade INT NOT NULL,
                     imagem VARCHAR(255),
                     preco DECIMAL(10,2) NOT NULL,
+                    categoria VARCHAR(255) NOT NULL,
                     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
             `);
@@ -131,7 +131,7 @@ router.post('/', async (req, res) => {
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nome_cliente VARCHAR(255) NOT NULL,
                 telefone_cliente VARCHAR(20) NOT NULL,
-                itens TEXT NOT NULL, -- Lista de produtos comprados em JSON
+                itens TEXT NOT NULL,
                 total DECIMAL(10,2) NOT NULL,
                 status ENUM('Pendente', 'Pago', 'Cancelado') DEFAULT 'Pendente',
                 data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -154,6 +154,59 @@ router.post('/', async (req, res) => {
     }    
 });
 
+router.get('/por-numero-bot/:numero', async (req, res) => {
+    let numero = req.params.numero;
+    if (numero.startsWith('55') && numero.length === 13) {
+        numero = numero.slice(2);
+    }
 
+    try {
+        const [rows] = await centralDb.query(
+            'SELECT * FROM empresas WHERE whatsapp = ? LIMIT 1',
+            [numero]
+        );
+
+        if (!rows.length) return res.status(404).json({ error: 'Empresa não encontrada' });
+
+        res.json(rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro interno', details: error });
+    }
+});
+
+router.get('/estoque/:idEmpresa', async (req, res) => {
+    const idEmpresa = req.params.idEmpresa;
+
+    try {
+        const [empresaRows] = await centralDb.query('SELECT banco_dados FROM empresas WHERE id = ?', [idEmpresa]);
+        if (!empresaRows.length) {
+            return res.status(404).json({ error: 'Empresa não encontrada' });
+        }
+
+        const nomeBanco = empresaRows[0].banco_dados;
+
+        const empresaDb = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: '',
+            database: nomeBanco
+        });
+
+        const [colunas] = await empresaDb.query(`SHOW COLUMNS FROM estoque`);
+        const colunasDisponiveis = colunas.map(col => col.Field);
+
+        const campos = ['id', 'nome', 'preco', 'quantidade']
+          .concat(colunasDisponiveis.includes('marca') ? ['marca'] : [])
+          .concat(colunasDisponiveis.includes('tamanho') ? ['tamanho'] : [])
+          .concat(colunasDisponiveis.includes('cor') ? ['cor'] : []);
+
+        const [produtos] = await empresaDb.query(`SELECT ${campos.join(', ')} FROM estoque`);
+
+        res.json(produtos);
+    } catch (error) {
+        console.error('Erro ao buscar estoque da loja:', error);
+        res.status(500).json({ error: 'Erro interno ao consultar estoque' });
+    }
+});
 
 module.exports = router;
