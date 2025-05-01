@@ -1,6 +1,5 @@
-2025/04/23-18:53:59.197 50b4 Reusing MANIFEST C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\Local Storage\leveldb/MANIFEST-000001
-2025/04/23-18:53:59.197 50b4 Recovering log #4
-2025/04/23-18:53:59.198 50b4 Reusing old log C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\Local Storage\leveldb/000004.log 
-2025/04/23-18:55:02.325 47cc Level-0 table #7: started
-2025/04/23-18:55:02.328 47cc Level-0 table #7: 14317 bytes OK
-2025/04/23-18:55:02.329 47cc Delete type=0 #4
+2025/05/01-15:50:27.229 46c0 Reusing MANIFEST C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\Local Storage\leveldb/MANIFEST-000001
+2025/05/01-15:50:27.231 46c0 Recovering log #3
+2025/05/01-15:50:27.231 46c0 Level-0 table #3: started
+2025/05/01-15:50:27.234 46c0 Level-0 table #3: 17478 bytes OK
+2025/05/01-15:50:27.236 46c0 Delete type=0 #3

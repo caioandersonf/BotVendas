@@ -1,3 +1,4 @@
+import './EditarItem.css';
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -54,53 +55,44 @@ const EditarItem = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-8">
-            <h2 className="text-3xl font-bold mb-6">Editar Item</h2>
-
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                {campos.map((campo, index) => (
-                    <input
-                        key={index}
-                        type={campo.tipo.includes("int") || campo.tipo.includes("decimal") ? "number" : "text"}
-                        placeholder={campo.nome}
-                        value={item[campo.nome] || ""}
-                        onChange={(e) =>
-                            setItem({ ...item, [campo.nome]: e.target.value })
-                        }
-                        className="w-full p-2 border rounded-md mb-3"
-                    />
-                ))}
-
-                {item.imagem && (
-                    <img
-                        src={`http://localhost:5000/uploads/${item.imagem}`}
-                        alt="Imagem atual"
-                        className="w-full h-40 object-contain mb-3 rounded"
-                    />
-                )}
-
-                {/* Upload de nova imagem */}
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setNovaImagem(e.target.files[0])}
-                    className="w-full p-2 border rounded-md mb-3"
-                />
-
-                <button
-                    onClick={handleEditar}
-                    className="w-full px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-                >
-                    Salvar Alterações
-                </button>
-            </div>
-
-            <button
-                onClick={() => navigate("/estoque")}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            >
-                Voltar ao Estoque
+        <div className="editar-container">
+          <h2>Editar Item</h2>
+      
+          <div className="editar-card">
+            {campos.map((campo, index) => (
+              <input
+                key={index}
+                type={campo.tipo.includes("int") || campo.tipo.includes("decimal") ? "number" : "text"}
+                placeholder={campo.nome}
+                value={item[campo.nome] || ""}
+                onChange={(e) =>
+                  setItem({ ...item, [campo.nome]: e.target.value })
+                }
+              />
+            ))}
+      
+            {item.imagem && (
+              <img
+                src={`http://localhost:5000/uploads/${item.imagem}`}
+                alt="Imagem atual"
+                className="imagem-preview"
+              />
+            )}
+      
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setNovaImagem(e.target.files[0])}
+            />
+      
+            <button onClick={handleEditar} className="btn-amarelo">
+              Salvar Alterações
             </button>
+          </div>
+      
+          <button onClick={() => navigate("/estoque")} className="btn-voltar">
+            Voltar ao Estoque
+          </button>
         </div>
     );
 };

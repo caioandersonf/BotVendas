@@ -1,0 +1,142 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom, #7e22ce, #312e81);
+    color: #fff;
+}
+
+.pedidos-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.pedidos-container h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+}
+
+.pedidos-tabela table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    backdrop-filter: blur(6px);
+}
+
+.pedidos-tabela th,
+.pedidos-tabela td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    text-align: left;
+}
+
+.pedidos-tabela th {
+    background-color: rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.pedidos-tabela td pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.pedidos-tabela button {
+    margin: 4px 0.3rem;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.botao-aprovar {
+    background-color: #22c55e;
+    color: #fff;
+}
+.botao-aprovar:hover {
+    background-color: #16a34a;
+}
+
+.botao-cancelar {
+    background-color: #ef4444;
+    color: #fff;
+}
+.botao-cancelar:hover {
+    background-color: #dc2626;
+}
+
+.modal-cancelamento {
+    background-color: #1e1b4b;
+    border: 2px solid #fff;
+    padding: 2rem;
+    margin-top: 2rem;
+    border-radius: 8px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.modal-cancelamento textarea {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 6px;
+    border: none;
+    resize: vertical;
+    min-height: 100px;
+    margin-bottom: 1rem;
+    font-family: inherit;
+}
+
+.modal-cancelamento button {
+    margin: 0 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-cancelamento button:first-of-type {
+    background-color: #ef4444;
+    color: #fff;
+}
+
+.modal-cancelamento button:last-of-type {
+    background-color: #64748b;
+    color: #fff;
+}
+
+@media screen and (max-width: 768px) {
+    .pedidos-tabela table,
+    .pedidos-tabela thead,
+    .pedidos-tabela tbody,
+    .pedidos-tabela th,
+    .pedidos-tabela td,
+    .pedidos-tabela tr {
+        display: block;
+    }
+
+    .pedidos-tabela th {
+        display: none;
+    }
+
+    .pedidos-tabela td {
+        border: none;
+        padding: 0.8rem 1rem;
+        position: relative;
+        text-align: left;
+    }
+
+    .pedidos-tabela td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+    }
+}

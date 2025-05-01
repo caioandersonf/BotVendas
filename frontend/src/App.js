@@ -9,6 +9,7 @@ import Estoque from "./components/Estoque";
 import CadastrarItem from "./components/CadastrarItem";
 import EditarItem from "./components/EditarItem";
 import DashboardEstoque from "./components/DashboardEstoque";
+import Pedidos from "./components/Pedidos";
 
 const App = () => {
     return (
@@ -23,6 +24,7 @@ const App = () => {
                 <Route path="/cadastrar-item" element={<CadastrarItem />} />
                 <Route path="/editar-item/:id" element={<EditarItem />} />
                 <Route path="/dashboard-estoque" element={<DashboardEstoque />} />
+                <Route path="/pedidos" element={<Pedidos />} />
             </Routes>
         </BrowserRouter>
     );

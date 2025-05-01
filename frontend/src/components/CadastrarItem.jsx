@@ -1,3 +1,4 @@
+import './CadastrarItem.css';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -49,47 +50,38 @@ const CadastrarItem = () => {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-            <h2 className="text-3xl font-bold mb-4">Cadastrar Novo Item</h2>
-
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-                {camposEstoque.map((campo, index) => (
-                    <input
-                        key={index}
-                        type={campo.tipo.includes("int") || campo.tipo.includes("decimal") ? "number" : "text"}
-                        placeholder={campo.nome}
-                        value={novoItem[campo.nome] || ""}
-                        onChange={(e) =>
-                            setNovoItem({ ...novoItem, [campo.nome]: e.target.value })
-                        }
-                        className="w-full p-2 border rounded-md mb-2"
-                    />
-                ))}
-
-                {/* Upload de imagem */}
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImagem(e.target.files[0])}
-                    className="w-full p-2 border rounded-md mb-2"
-                />
-
-                <button
-                    onClick={handleCadastro}
-                    className="w-full px-4 py-2 bg-green-500 text-white rounded-md mt-2 hover:bg-green-600"
-                >
-                    Cadastrar Item
-                </button>
-            </div>
-
-            <button
-                onClick={() => navigate("/estoque")}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md mt-4 hover:bg-blue-600"
-            >
-                Voltar ao Estoque
+        <div className="cadastrar-container">
+          <h2>Cadastrar Novo Item</h2>
+      
+          <div className="cadastrar-card">
+            {camposEstoque.map((campo, index) => (
+              <input
+                key={index}
+                type={campo.tipo.includes("int") || campo.tipo.includes("decimal") ? "number" : "text"}
+                placeholder={campo.nome}
+                value={novoItem[campo.nome] || ""}
+                onChange={(e) =>
+                  setNovoItem({ ...novoItem, [campo.nome]: e.target.value })
+                }
+              />
+            ))}
+      
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImagem(e.target.files[0])}
+            />
+      
+            <button onClick={handleCadastro} className="btn-verde">
+              Cadastrar Item
             </button>
+          </div>
+      
+          <button onClick={() => navigate("/estoque")} className="btn-voltar">
+            Voltar ao Estoque
+          </button>
         </div>
-    );
+      );      
 };
 
 export default CadastrarItem;

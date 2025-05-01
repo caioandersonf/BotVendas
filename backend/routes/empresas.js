@@ -130,13 +130,22 @@ router.post('/', async (req, res) => {
             CREATE TABLE IF NOT EXISTS pedidos (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nome_cliente VARCHAR(255) NOT NULL,
-                telefone_cliente VARCHAR(20) NOT NULL,
+                cpf_cliente VARCHAR(20),
+                telefone_cliente VARCHAR(20),
+                tipo_entrega ENUM('entrega', 'retirada') NOT NULL,
+                cidade VARCHAR(100),
+                bairro VARCHAR(100),
+                rua VARCHAR(150),
+                numero VARCHAR(20),
+                complemento VARCHAR(255),
+                pagamento VARCHAR(20),
+                troco VARCHAR(100),
                 itens TEXT NOT NULL,
                 total DECIMAL(10,2) NOT NULL,
-                status ENUM('Pendente', 'Pago', 'Cancelado') DEFAULT 'Pendente',
+                status ENUM('Aguardando Aprovação', 'Aprovado', 'Negado') DEFAULT 'Aguardando Aprovação',
                 data_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
+        `);        
         console.log("✅ Tabela 'pedidos' criada!");
 
         await empresaDb.end();
