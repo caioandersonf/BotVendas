@@ -34,41 +34,82 @@ async function start(client) {
     const texto = message.body.toLowerCase();
 
     if (estadoAdicaoCarrinho[message.from]) {
+      const fila = estadoAdicaoCarrinho[message.from].fila || [];
       const qtd = parseInt(texto);
+
+      // Validação da quantidade digitada
       if (isNaN(qtd) || qtd < 1) {
         await client.sendText(message.from, '❗ Por favor, digite uma *quantidade válida* (ex: 1, 2, 3...).');
         return;
       }
-    
-      const { produto } = estadoAdicaoCarrinho[message.from];
-      delete estadoAdicaoCarrinho[message.from];
-    
+
+      const produto = fila.shift(); // pega o primeiro da fila
+
+      if (!produto) {
+        delete estadoAdicaoCarrinho[message.from];
+        return;
+      }
+
+      const estoqueDisponivel = parseInt(produto.quantidade ?? 0);
       if (!carrinhos[message.from]) carrinhos[message.from] = [];
-    
+
       const existente = carrinhos[message.from].find(p => p.produto.nome === produto.nome);
+      const jaNoCarrinho = existente ? existente.quantidade : 0;
+      const totalDesejado = qtd + jaNoCarrinho;
+
+      // Validação do estoque
+      if (totalDesejado > estoqueDisponivel) {
+        await client.sendText(
+          message.from,
+          `🚫 Estoque insuficiente! Temos apenas *${estoqueDisponivel - jaNoCarrinho} unidade(s)* disponíveis de *${produto.nome}*.`
+        );
+        fila.unshift(produto); // devolve pra fila para tentar novamente
+        return;
+      }
+
       if (existente) {
         existente.quantidade += qtd;
       } else {
         carrinhos[message.from].push({ produto, quantidade: qtd });
       }
-    
+
       const precoTotal = (parseFloat(produto.preco || 0) * qtd).toFixed(2);
       await client.sendText(message.from, `✅ *${produto.nome}* (${qtd}x) adicionado ao carrinho! 🛒\n💰 Total: R$ ${precoTotal}`);
+
+      // Se ainda tem mais na fila, perguntar o próximo
+      if (fila.length > 0) {
+        const proximo = fila[0];
+        await client.sendText(message.from, `📦 Quantas unidades de *${proximo.nome}* você deseja adicionar ao carrinho?`);
+      } else {
+        delete estadoAdicaoCarrinho[message.from];
+        await client.sendText(message.from, '✅ Todos os produtos foram adicionados ao carrinho!');
+
+        const menu = `👋 O que deseja fazer agora?
+
+    1- 🛍️ Ver Catálogo de Produtos  
+    2- 🛒 Ver Carrinho  
+    3- 💬 Falar com um Atendente  
+    4- ❌ Cancelar Atendimento
+
+    Digite o número da opção ou envie o nome do produto para buscar diretamente.`;
+        await client.sendText(message.from, menu);
+      }
+
       return;
-    }    
+    }
   
     if (texto === 'oi') {
       const msg = `👋 Olá! Você está falando com o atendimento da *${dadosLoja?.nome || 'nossa loja'}*.
   
-  Escolha uma opção para continuar:
-  
-  1- 🛍️ Ver Catálogo de Produtos  
-  2- 🛒 Ver Carrinho  
-  3- 💬 Falar com um Atendente  
-  4- ❌ Cancelar Atendimento
-  
-  Você também pode digitar o nome, categoria, cor ou marca para buscar produtos diretamente.  
-  Estamos aqui pra te ajudar! 🤖`;
+    Escolha uma opção para continuar:
+    
+    1- 🛍️ Ver Catálogo de Produtos  
+    2- 🛒 Ver Carrinho  
+    3- 💬 Falar com um Atendente  
+    4- ❌ Cancelar Atendimento
+    
+    Você também pode digitar o nome, categoria, cor ou marca para buscar produtos diretamente.  
+    Estamos aqui pra te ajudar! 🤖`;
       await client.sendText(message.from, msg);
       return;
     }
@@ -301,29 +342,77 @@ async function start(client) {
       return await client.sendText(message.from, '↩️ Retornando ao menu principal. Digite *oi* para começar novamente.');
     }
 
-    if ((texto.startsWith('quero ') || texto.startsWith('adicionar ')) && catalogoEstado[message.from]) {
-      const index = parseInt(texto.replace(/[^0-9]/g, ''), 10);
+        if ((texto.includes('quero') || texto.includes('adicionar')) && catalogoEstado[message.from]) {
+      // AVISO para casos como: "quero 1 quero 2"
+      if (texto.match(/(quero|adicionar)\s+\d+\s+(quero|adicionar)\s+\d+/) && !texto.includes(',')) {
+        await client.sendText(message.from, '⚠️ Parece que você quer adicionar múltiplos produtos. Separe com *vírgula*, como: "quero 1, quero 2".');
+        return;
+      }
+
+      const comandos = texto
+        .split(',')
+        .map(c => c.trim())
+        .filter(c => c.match(/(quero|adicionar)\s+\d+/));
+
       const estado = catalogoEstado[message.from];
-    
+
+      if (comandos.length > 1) {
+        for (const cmd of comandos) {
+          const index = parseInt(cmd.replace(/[^0-9]/g, ''), 10);
+
+          if (isNaN(index) || index < 1) {
+            await client.sendText(message.from, `❌ Número inválido em "${cmd}". Use por exemplo: "quero 1" ou "adicionar 2".`);
+            continue;
+          }
+
+          const paginaAtual = estado.pagina;
+          const inicio = (paginaAtual - 1) * 5;
+          const produto = estado.filtrado[inicio + index - 1];
+
+          if (!produto) {
+            await client.sendText(message.from, `❌ Produto ${index} não encontrado nesta página.`);
+            continue;
+          }
+
+          if (!estadoAdicaoCarrinho[message.from]) {
+            estadoAdicaoCarrinho[message.from] = { fila: [] };
+          }
+
+          estadoAdicaoCarrinho[message.from].fila.push(produto);
+        }
+
+        // Após adicionar todos, perguntar sobre o primeiro
+        const fila = estadoAdicaoCarrinho[message.from].fila;
+        if (fila.length > 0) {
+          const primeiro = fila[0];
+          await client.sendText(message.from, `📦 Quantas unidades de *${primeiro.nome}* você deseja adicionar ao carrinho?`);
+        }
+
+        return;
+      }
+
+      // CASO SEJA SOMENTE 1 COMANDO (quero 2)
+      const index = parseInt(texto.replace(/[^0-9]/g, ''), 10);
+
       if (isNaN(index) || index < 1) {
         await client.sendText(message.from, '❌ Número inválido. Tente "quero 1" ou "adicionar 2".');
         return;
       }
-    
+
       const paginaAtual = estado.pagina;
       const inicio = (paginaAtual - 1) * 5;
       const produto = estado.filtrado[inicio + index - 1];
-    
+
       if (!produto) {
         await client.sendText(message.from, `❌ Produto ${index} não encontrado nesta página.`);
         return;
       }
-    
-      estadoAdicaoCarrinho[message.from] = { produto };
+
+      estadoAdicaoCarrinho[message.from] = { fila: [produto] };
       await client.sendText(message.from, `📦 Quantas unidades de *${produto.nome}* você deseja adicionar ao carrinho?`);
       return;
-    }    
-  
+    }
+
     if (catalogoEstado[message.from]) {
       const estado = catalogoEstado[message.from];
       const termo = texto.toLowerCase();
@@ -347,8 +436,14 @@ async function start(client) {
       }
       return;
     }
-  });  
-}
+
+    // 🔚 Fallback final: nenhuma das opções anteriores foi reconhecida
+    await client.sendText(
+      message.from,
+      '❌ Comando não reconhecido. Por favor, escolha uma opção válida do menu digitando *oi* para começar'
+    );
+  });
+} 
 
 function gerarResumoPedido(estado) {
   const itens = estado.carrinho.map((item, i) => {
@@ -381,6 +476,7 @@ function montarResposta(produtos, pagina) {
     resposta += `*${i + 1}.* ${nome} (${marca})\n🧵 *Tamanho:* ${tamanho} | 🎨 *Cor:* ${cor}\n💰 *Preço:* R$ ${preco}\n📦 *Estoque:* ${qtd}\n\n`;
   });
   resposta += '_Digite *quero 1*, *quero 2* ou *adicionar 3* para selecionar um produto._';
+  resposta += '\n_Você também pode selecionar *vários produtos* de uma vez separando por vírgula (ex: quero 1, quero 2)._';
   resposta += '\n_Digite *mais* para ver outros produtos._';
   return resposta;
 }
