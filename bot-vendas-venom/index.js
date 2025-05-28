@@ -5,6 +5,7 @@ const catalogoEstado = {}; // { "numero@c.us": { pagina, produtos, filtrado: [],
 const estadoFinalizacao = {}; // { "numero@c.us": { etapa, carrinho, nome, cpf, tipoEntrega, endereco, pagamento, troco } }
 const carrinhos = {}; // { "numero@c.us": [ { produto, quantidade } ] }
 const estadoAdicaoCarrinho = {}; // { "numero@c.us": { produto } }
+let numeroLoja = null; // ← agora é global
 
 venom
   .create({ session: 'bot-vendas', multidevice: true })
@@ -18,11 +19,11 @@ async function start(client) {
 
   try {
     const host = await client.getHostDevice();
-    const numeroLimpo = host?.id?.user;
-    if (!numeroLimpo) return console.error('❌ Número do bot não encontrado no hostDevice.');
-    console.log('📞 Número do bot:', numeroLimpo);
+    numeroLoja = host?.id?.user; // ← agora salva globalmente
+    if (!numeroLoja) return console.error('❌ Número do bot não encontrado no hostDevice.');
+    console.log('📞 Número do bot:', numeroLoja);
 
-    const res = await fetch(`http://localhost:5000/api/empresas/por-numero-bot/${numeroLimpo}`);
+    const res = await fetch(`http://localhost:5000/api/empresas/por-numero-bot/${numeroLoja}`);
     dadosLoja = await res.json();
     console.log(`🏪 Loja identificada: ${dadosLoja?.nome || 'Desconhecida'}`);
   } catch (err) {
@@ -293,6 +294,7 @@ async function start(client) {
         case 'confirmar':
           if (texto === 'sim') {
             await client.sendText(message.from, '📨 Pedido encaminhado para aprovação. Em instantes entraremos em contato!');
+            await enviarPedidoParaBackend(message.from);
 
             // Aqui você pode integrar com o backend
             console.log('📝 Pedido confirmado:', estado);
@@ -479,4 +481,55 @@ function montarResposta(produtos, pagina) {
   resposta += '\n_Você também pode selecionar *vários produtos* de uma vez separando por vírgula (ex: quero 1, quero 2)._';
   resposta += '\n_Digite *mais* para ver outros produtos._';
   return resposta;
+}
+
+async function enviarPedidoParaBackend(numeroCliente) {
+  const pedido = estadoFinalizacao[numeroCliente];
+  if (!pedido || !pedido.carrinho || pedido.carrinho.length === 0) {
+    console.log("⚠️ Pedido incompleto ou carrinho vazio.");
+    return;
+  }
+
+  const payload = {
+    numero_bot: numeroLoja,
+    cliente: {
+      nome: pedido.nome,
+      cpf: pedido.cpf,
+      telefone: numeroCliente.replace('@c.us', '')
+    },
+    entrega: {
+      tipo: pedido.tipoEntrega,
+      cidade: pedido.endereco?.cidade || "",
+      bairro: pedido.endereco?.bairro || "",
+      rua: pedido.endereco?.rua || "",
+      numero: pedido.endereco?.numero || "",
+      complemento: pedido.endereco?.complemento || ""
+    },
+    pagamento: {
+      forma: pedido.pagamento,
+      troco: pedido.troco || null
+    },
+    produtos: pedido.carrinho.map(item => ({
+      nome: item.produto.nome,
+      quantidade: item.quantidade,
+      preco: item.produto.preco
+    })),
+    observacao: pedido.observacao || ''
+  };
+
+  try {
+    const resposta = await fetch("http://localhost:3000/api/pedidos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (resposta.ok) {
+      console.log("✅ Pedido enviado com sucesso ao backend!");
+    } else {
+      console.error("❌ Erro ao enviar pedido:", await resposta.text());
+    }
+  } catch (err) {
+    console.error("❌ Erro de rede ao enviar pedido:", err);
+  }
 }
