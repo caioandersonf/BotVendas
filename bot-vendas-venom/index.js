@@ -292,19 +292,46 @@ async function start(client) {
 
         case 'confirmar':
           if (texto === 'sim') {
-            await client.sendText(message.from, '📨 Pedido encaminhado para aprovação. Em instantes entraremos em contato!');
+            const estado = estadoFinalizacao[message.from];
 
-            // Aqui você pode integrar com o backend
-            console.log('📝 Pedido confirmado:', estado);
+            // Construir corpo do pedido
+            const corpoPedido = {
+              numeroLoja: dadosLoja.whatsapp,
+              cliente: {
+                nome: estado.nome,
+                cpf: estado.cpf,
+                telefone: estado.telefone
+              },
+              tipoEntrega: estado.tipoEntrega,
+              endereco: estado.endereco || {},
+              pagamento: estado.pagamento,
+              troco: estado.troco,
+              itens: estado.carrinho.map(item => ({
+                nome: item.produto.nome,
+                quantidade: item.quantidade,
+                preco: parseFloat(item.produto.preco || 0)
+              })),
+              total: estado.carrinho.reduce((sum, item) => sum + (parseFloat(item.produto.preco || 0) * item.quantidade), 0).toFixed(2)
+            };
+
+            // Enviar para o backend
+            try {
+              await fetch('http://localhost:5000/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(corpoPedido)
+              });
+
+              await client.sendText(message.from, '📨 Pedido registrado com sucesso! Em instantes entraremos em contato. 🧾');
+            } catch (error) {
+              console.error('❌ Erro ao enviar pedido para backend:', error);
+              await client.sendText(message.from, '❌ Ocorreu um erro ao registrar seu pedido. Tente novamente ou fale com um atendente.');
+            }
 
             delete estadoFinalizacao[message.from];
-          } else {
-            await client.sendText(message.from, '❌ Pedido cancelado. Se quiser começar de novo, digite *finalizar* novamente.');
-            delete estadoFinalizacao[message.from];
+            delete carrinhos[message.from]; // limpar o carrinho após envio
           }
-          break;
       }
-
       return;
     }
   
