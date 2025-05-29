@@ -3,7 +3,6 @@ const cors = require('cors');
 const empresasRoutes = require('./routes/empresas');
 const recoveryRoutes = require('./routes/recovery');
 const loginRoutes = require('./routes/login'); 
-const pedidosRoutes = require('./routes/pedidos');
 
 const app = express();
 app.use(cors());
@@ -14,7 +13,6 @@ app.use('/api/recovery', recoveryRoutes);
 app.use('/api', loginRoutes);
 app.use('/api/estoque', require('./routes/estoqueCampos'));
 app.use("/uploads", express.static("uploads"));
-app.use('/api/pedidos', pedidosRoutes);
 
 
 const PORT = 5000;
