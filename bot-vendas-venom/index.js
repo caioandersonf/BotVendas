@@ -7,7 +7,7 @@ const carrinhos = {}; // { "numero@c.us": [ { produto, quantidade } ] }
 const estadoAdicaoCarrinho = {}; // { "numero@c.us": { produto } }
 
 venom
-  .create({ session: 'bot-vendas', multidevice: true })
+  .create({ session: 'bot-vendas', multidevice: true,  headless: 'new'})
   .then((client) => start(client))
   .catch((erro) => console.log('❌ Erro ao iniciar o bot', erro));
 
