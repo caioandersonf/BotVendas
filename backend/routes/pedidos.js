@@ -3,8 +3,11 @@ const mysql = require('mysql2/promise');
 const router = express.Router();
 const { centralDb } = require('../config/db');
 
-router.post('/api/pedidos', async (req, res) => {
+router.post('/pedidos', async (req, res) => {
   try {
+    console.log('📥 Requisição recebida em /api/pedidos');
+    console.log('Dados recebidos:', req.body);
+
     const {
       cliente,
       tipoEntrega,
@@ -16,14 +19,18 @@ router.post('/api/pedidos', async (req, res) => {
       numeroLoja // <- chave para buscar o banco correto
     } = req.body;
 
+    console.log('🔍 Buscando banco para número:', JSON.stringify(numeroLoja)); 
+
+    const numeroFormatado = String(numeroLoja).trim();
+
     if (!numeroLoja || !cliente || !itens || itens.length === 0 || !total) {
       return res.status(400).json({ mensagem: 'Dados incompletos.' });
     }
 
     // 🔍 Buscar nome do banco no banco central
     const [empresas] = await centralDb.query(
-      'SELECT banco_dados FROM empresas WHERE whatsapp = ? LIMIT 1',
-      [numeroLoja.replace('55', '')] // remove o DDI se estiver incluso
+      'SELECT banco_dados FROM empresas WHERE TRIM(whatsapp) = ? LIMIT 1',
+      [numeroFormatado]
     );
 
     if (!empresas.length) {
@@ -77,7 +84,11 @@ router.post('/api/pedidos', async (req, res) => {
 
   } catch (err) {
     console.error('❌ Erro ao salvar pedido:', err);
-    res.status(500).json({ mensagem: 'Erro interno ao registrar pedido.' });
+    res.status(500).json({
+    mensagem: 'Erro interno ao registrar pedido.',
+    erro: err.message || err
+  });
+
   }
 });
 

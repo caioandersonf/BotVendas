@@ -316,18 +316,22 @@ async function start(client) {
 
             // Enviar para o backend
             try {
-              await fetch('http://localhost:5000/api/pedidos', {
+              const res = await fetch('http://localhost:5000/api/pedidos', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(corpoPedido)
               });
+
+              const resposta = await res.json();
+              console.log('📨 Resposta do backend:', resposta);
+
+              if (!res.ok) throw new Error(resposta.mensagem);
 
               await client.sendText(message.from, '📨 Pedido registrado com sucesso! Em instantes entraremos em contato. 🧾');
             } catch (error) {
               console.error('❌ Erro ao enviar pedido para backend:', error);
               await client.sendText(message.from, '❌ Ocorreu um erro ao registrar seu pedido. Tente novamente ou fale com um atendente.');
             }
-
             delete estadoFinalizacao[message.from];
             delete carrinhos[message.from]; // limpar o carrinho após envio
           }
