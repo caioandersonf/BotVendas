@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2/promise');
 const router = express.Router();
 const { centralDb } = require('../config/db');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 router.post('/pedidos', async (req, res) => {
   try {
@@ -89,6 +90,118 @@ router.post('/pedidos', async (req, res) => {
     erro: err.message || err
   });
 
+  }
+});
+
+router.get('/pedidos', async (req, res) => {
+  const { banco_dados } = req.query;
+
+  if (!banco_dados) {
+    return res.status(400).json({ mensagem: 'Banco de dados não informado.' });
+  }
+
+  try {
+    const empresaDb = await mysql.createConnection({
+      host: 'localhost',
+      user: 'root',
+      password: '',
+      database: banco_dados
+    });
+
+    const [pedidos] = await empresaDb.query('SELECT * FROM pedidos ORDER BY data_pedido DESC');
+
+    await empresaDb.end();
+
+    res.json(pedidos);
+  } catch (err) {
+    console.error('❌ Erro ao buscar pedidos:', err);
+    res.status(500).json({
+      mensagem: 'Erro interno ao buscar pedidos.',
+      erro: err.message || err
+    });
+  }
+});
+
+router.post('/pedidos/atualizar-status', async (req, res) => {
+  const { banco_dados, id, status, motivo_cancelamento } = req.body;
+
+  if (!banco_dados || !id || !status) {
+    return res.status(400).json({ mensagem: 'Dados obrigatórios faltando.' });
+  }
+
+  try {
+    const empresaDb = await mysql.createConnection({
+      host: 'localhost',
+      user: 'root',
+      password: '',
+      database: banco_dados
+    });
+
+    // 1. Obter status atual e itens do pedido
+    const [[pedido]] = await empresaDb.query(
+      'SELECT status, itens FROM pedidos WHERE id = ?',
+      [id]
+    );
+
+    if (!pedido) {
+      return res.status(404).json({ mensagem: 'Pedido não encontrado.' });
+    }
+
+    const statusAnterior = pedido.status;
+    const itens = JSON.parse(pedido.itens || '[]');
+
+    // 2. Atualizar o status do pedido
+    await empresaDb.query(
+      'UPDATE pedidos SET status = ?, motivo_cancelamento = ? WHERE id = ?',
+      [status, motivo_cancelamento || null, id]
+    );
+
+    // 3. Lógica de estoque
+    if (status === 'Aprovado' && statusAnterior === 'Aguardando Aprovação') {
+      for (const item of itens) {
+        await empresaDb.query(
+          'UPDATE estoque SET quantidade = quantidade - 1 WHERE nome = ? LIMIT 1',
+          [item.nome]
+        );
+      }
+    } else if (status === 'Cancelado' && statusAnterior === 'Aprovado') {
+      for (const item of itens) {
+        await empresaDb.query(
+          'UPDATE estoque SET quantidade = quantidade + 1 WHERE nome = ? LIMIT 1',
+          [item.nome]
+        );
+      }
+    }
+
+    // 4. Se aprovado, enviar mensagem para o cliente pelo bot
+    if (status === 'Aprovado') {
+      const telefoneCliente = pedido.telefone_cliente;
+      const tipoEntrega = pedido.tipo_entrega;
+
+      try {
+        await fetch('http://localhost:5001/api/notificar-cliente', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            telefone: telefoneCliente,
+            tipoEntrega
+          })
+        });
+      } catch (err) {
+        console.error('⚠️ Erro ao notificar cliente via bot:', err.message);
+      }
+    }
+
+    await empresaDb.end();
+
+    res.json({ mensagem: 'Status atualizado com sucesso.' });
+
+  } catch (err) {
+    console.error('❌ Erro ao atualizar status:', err);
+    res.status(500).json({
+      mensagem: 'Erro interno ao atualizar status.',
+      erro: err.message || err
+    });
   }
 });
 
