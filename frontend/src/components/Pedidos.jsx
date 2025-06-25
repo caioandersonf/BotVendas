@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 const Pedidos = () => {
     const [usuario, setUsuario] = useState(null);
     const [pedidos, setPedidos] = useState([]);
-    const [motivoCancelamento, setMotivoCancelamento] = useState('');
-    const [pedidoSelecionado, setPedidoSelecionado] = useState(null);
     const [busca, setBusca] = useState('');
     const navigate = useNavigate();
 
@@ -26,6 +24,7 @@ const Pedidos = () => {
         try {
             const res = await fetch(`/api/pedidos?banco_dados=${banco}`);
             const data = await res.json();
+            console.log("🔎 Dados recebidos:", data);
             setPedidos(data);
         } catch (error) {
             console.error('Erro ao buscar pedidos:', error);
@@ -53,7 +52,7 @@ const Pedidos = () => {
     const pedidosFiltrados = pedidos.filter(p =>
         p.nome_cliente.toLowerCase().includes(busca.toLowerCase()) ||
         p.telefone_cliente?.toLowerCase().includes(busca.toLowerCase()) ||
-        p.cpf?.toLowerCase().includes(busca.toLowerCase())
+        p.cpf_cliente?.toLowerCase().includes(busca.toLowerCase())
     );
 
     const formatarStatus = (status) => {
@@ -69,6 +68,9 @@ const Pedidos = () => {
         if (status === 'Cancelado') return <span style={{ ...baseStyle, backgroundColor: '#ef4444', color: '#fff' }}>❌ {status}</span>;
         return <span style={baseStyle}>{status}</span>;
     };
+
+    const [statusEditando, setStatusEditando] = useState({});
+    const [motivos, setMotivos] = useState({});
 
     return (
         <div className="pedidos-container">
@@ -128,22 +130,68 @@ const Pedidos = () => {
                                     <td>R$ {parseFloat(p.total).toFixed(2)}</td>
                                     <td>{formatarStatus(p.status)}</td>
                                     <td>
-                                        {p.status === 'Aguardando' && (
-                                            <>
-                                                <button
-                                                    className="botao-aprovar"
-                                                    onClick={() => atualizarStatus(p.id, 'Aprovado')}
-                                                >
-                                                    Aprovar
-                                                </button>
-                                                <button
-                                                    className="botao-cancelar"
-                                                    onClick={() => setPedidoSelecionado(p.id)}
-                                                >
-                                                    Cancelar
-                                                </button>
-                                            </>
+                                        <select
+                                            value={statusEditando[p.id] || p.status}
+                                            onChange={(e) => {
+                                            const novoStatus = e.target.value;
+                                            setStatusEditando((prev) => ({ ...prev, [p.id]: novoStatus }));
+                                            if (novoStatus === 'Cancelado') {
+                                                setMotivos((prev) => ({ ...prev, [p.id]: '' }));
+                                            }
+                                            }}
+                                            style={{
+                                            padding: '6px',
+                                            borderRadius: '6px',
+                                            backgroundColor: '#1e1e2f',
+                                            color: '#fff',
+                                            border: '1px solid #555',
+                                            marginBottom: '6px',
+                                            }}
+                                        >
+                                            <option value="Aguardando Aprovação">Aguardando</option>
+                                            <option value="Aprovado">Aprovado</option>
+                                            <option value="Cancelado">Cancelado</option>
+                                        </select>
+
+                                        {statusEditando[p.id] === 'Cancelado' && (
+                                            <input
+                                            type="text"
+                                            placeholder="Motivo do cancelamento"
+                                            value={motivos[p.id] || ''}
+                                            onChange={(e) =>
+                                                setMotivos((prev) => ({ ...prev, [p.id]: e.target.value }))
+                                            }
+                                            style={{
+                                                width: '100%',
+                                                padding: '6px',
+                                                borderRadius: '6px',
+                                                border: '1px solid #ccc',
+                                                marginBottom: '6px',
+                                                backgroundColor: '#2a2a40',
+                                                color: '#fff',
+                                            }}
+                                            />
                                         )}
+
+                                        <button
+                                            onClick={() =>
+                                            atualizarStatus(
+                                                p.id,
+                                                statusEditando[p.id] || p.status,
+                                                statusEditando[p.id] === 'Cancelado' ? motivos[p.id] : ''
+                                            )
+                                            }
+                                            style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '6px',
+                                            backgroundColor: '#3b82f6',
+                                            color: '#fff',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            }}
+                                        >
+                                            Enviar
+                                        </button>
                                     </td>
                                 </tr>
                             ))
@@ -152,26 +200,22 @@ const Pedidos = () => {
                 </table>
             </div>
 
-            {pedidoSelecionado && (
-                <div className="modal-cancelamento">
-                    <h4>Motivo do Cancelamento</h4>
-                    <textarea
-                        placeholder="Descreva o motivo..."
-                        value={motivoCancelamento}
-                        onChange={(e) => setMotivoCancelamento(e.target.value)}
-                    />
-                    <button
-                        onClick={() => {
-                            atualizarStatus(pedidoSelecionado, 'Cancelado', motivoCancelamento);
-                            setPedidoSelecionado(null);
-                            setMotivoCancelamento('');
-                        }}
-                    >
-                        Confirmar Cancelamento
-                    </button>
-                    <button onClick={() => setPedidoSelecionado(null)}>Voltar</button>
-                </div>
-            )}
+            <div style={{ marginTop: '2rem' }}>
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    style={{
+                        backgroundColor: '#3b82f6',
+                        color: '#fff',
+                        padding: '10px 20px',
+                        borderRadius: '6px',
+                        border: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    ⬅ Voltar ao Dashboard
+                </button>
+            </div>
+
         </div>
     );
 };

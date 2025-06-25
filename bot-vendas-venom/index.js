@@ -1,5 +1,18 @@
 const venom = require('venom-bot');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+app.use(bodyParser.json());
+app.use(express.json());
+
+let clientGlobal = null; // usado para acessar o client do venom fora da função
+
+venom.create({ session: 'bot-vendas', multidevice: true }).then((client) => {
+  clientGlobal = client;
+  start(client);
+  iniciarServidorAPI(); // <-- adiciona isso aqui
+});
 
 const catalogoEstado = {}; // { "numero@c.us": { pagina, produtos, filtrado: [], contexto: 'catalogo' } }
 const estadoFinalizacao = {}; // { "numero@c.us": { etapa, carrinho, nome, cpf, tipoEntrega, endereco, pagamento, troco } }
@@ -510,4 +523,31 @@ function montarResposta(produtos, pagina) {
   resposta += '\n_Você também pode selecionar *vários produtos* de uma vez separando por vírgula (ex: quero 1, quero 2)._';
   resposta += '\n_Digite *mais* para ver outros produtos._';
   return resposta;
+}
+
+function iniciarServidorAPI() {
+  app.post('/api/notificar-cliente', async (req, res) => {
+    const { telefone, tipoEntrega } = req.body;
+    const numeroFormatado = `${telefone}@c.us`;
+
+    let msg = '✅ Seu pedido foi aprovado com sucesso!';
+
+    if (tipoEntrega === 'entrega') {
+      msg += '\n🚚 Em instantes, ele será entregue no endereço informado.';
+    } else if (tipoEntrega === 'retirada') {
+      msg += '\n🏬 Você já pode ir até a loja para retirar seu pedido.';
+    }
+
+    try {
+      await clientGlobal.sendText(numeroFormatado, msg);
+      return res.status(200).json({ sucesso: true });
+    } catch (err) {
+      console.error('❌ Erro ao enviar mensagem:', err);
+      return res.status(500).json({ erro: 'Falha ao enviar mensagem.' });
+    }
+  });
+
+  app.listen(5001, () => {
+    console.log('📡 API do bot escutando em http://localhost:5001');
+  });
 }
