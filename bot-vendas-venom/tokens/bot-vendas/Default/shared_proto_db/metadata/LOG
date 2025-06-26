@@ -1,3 +1,2 @@
-2025/06/24-20:52:10.690 ec64 Reusing MANIFEST C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db\metadata/MANIFEST-000001
-2025/06/24-20:52:10.691 ec64 Recovering log #3
-2025/06/24-20:52:10.691 ec64 Reusing old log C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db\metadata/000003.log 
+2025/06/25-20:47:22.077 c7e4 Creating DB C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db\metadata since it was missing.
+2025/06/25-20:47:22.081 c7e4 Reusing MANIFEST C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db\metadata/MANIFEST-000001

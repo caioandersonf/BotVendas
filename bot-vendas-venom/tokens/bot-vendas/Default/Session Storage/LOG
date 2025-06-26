@@ -1,3 +1,2 @@
-2025/06/24-20:52:10.699 e87c Reusing MANIFEST C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Session Storage/MANIFEST-000001
-2025/06/24-20:52:10.700 e87c Recovering log #3
-2025/06/24-20:52:10.708 e87c Reusing old log C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Session Storage/000003.log 
+2025/06/25-20:47:22.075 66b4 Creating DB C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Session Storage since it was missing.
+2025/06/25-20:47:22.093 66b4 Reusing MANIFEST C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Session Storage/MANIFEST-000001
