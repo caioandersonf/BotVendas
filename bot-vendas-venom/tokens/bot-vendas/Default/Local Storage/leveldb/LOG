@@ -1,3 +1,2 @@
-2025/06/24-18:05:11.989 b8c Reusing MANIFEST C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\Local Storage\leveldb/MANIFEST-000001
-2025/06/24-18:05:12.004 b8c Recovering log #4
-2025/06/24-18:05:12.004 b8c Reusing old log C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\Local Storage\leveldb/000004.log 
+2025/06/25-20:47:22.019 66b4 Creating DB C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Local Storage\leveldb since it was missing.
+2025/06/25-20:47:22.033 66b4 Reusing MANIFEST C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Local Storage\leveldb/MANIFEST-000001

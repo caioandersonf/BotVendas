@@ -8,7 +8,7 @@ app.use(express.json());
 
 let clientGlobal = null; // usado para acessar o client do venom fora da função
 
-venom.create({ session: 'bot-vendas', multidevice: true }).then((client) => {
+venom.create({ session: 'bot-vendas', multidevice: true, headless: 'new'}).then((client) => {
   clientGlobal = client;
   start(client);
   iniciarServidorAPI(); // <-- adiciona isso aqui
@@ -20,7 +20,7 @@ const carrinhos = {}; // { "numero@c.us": [ { produto, quantidade } ] }
 const estadoAdicaoCarrinho = {}; // { "numero@c.us": { produto } }
 
 venom
-  .create({ session: 'bot-vendas', multidevice: true })
+  .create({ session: 'bot-vendas', multidevice: true,  headless: 'new'})
   .then((client) => start(client))
   .catch((erro) => console.log('❌ Erro ao iniciar o bot', erro));
 

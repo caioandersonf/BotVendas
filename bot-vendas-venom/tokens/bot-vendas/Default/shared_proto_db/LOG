@@ -1,3 +1,2 @@
-2025/06/24-18:05:12.016 329c Reusing MANIFEST C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db/MANIFEST-000001
-2025/06/24-18:05:12.024 329c Recovering log #3
-2025/06/24-18:05:12.024 329c Reusing old log C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db/000003.log 
+2025/06/25-20:47:22.084 c7e4 Creating DB C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db since it was missing.
+2025/06/25-20:47:22.089 c7e4 Reusing MANIFEST C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\shared_proto_db/MANIFEST-000001

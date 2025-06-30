@@ -1,3 +1,2 @@
-2025/06/24-18:05:11.997 42c4 Reusing MANIFEST C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\Service Worker\Database/MANIFEST-000001
-2025/06/24-18:05:12.006 42c4 Recovering log #3
-2025/06/24-18:05:12.006 42c4 Reusing old log C:\Users\Cavalo\Desktop\BotVendas\bot-vendas-venom\tokens\bot-vendas\Default\Service Worker\Database/000003.log 
+2025/06/25-20:47:22.111 c31c Creating DB C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Service Worker\Database since it was missing.
+2025/06/25-20:47:22.115 c31c Reusing MANIFEST C:\Users\vandr\OneDrive\Área de Trabalho\dev\botvendas\bot-vendas-venom\tokens\bot-vendas\Default\Service Worker\Database/MANIFEST-000001

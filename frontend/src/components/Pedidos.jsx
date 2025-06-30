@@ -72,6 +72,24 @@ const Pedidos = () => {
     const [statusEditando, setStatusEditando] = useState({});
     const [motivos, setMotivos] = useState({});
 
+    const formatarItens = (itensJson) => {
+        try {
+            const itens = JSON.parse(itensJson);
+            return (
+                <ul>
+                    {itens.map((item, index) => (
+                        <li key={index}>
+                            {item.nome} (x{item.quantidade}) - R$ {parseFloat(item.preco).toFixed(2)}
+                        </li>
+                    ))}
+                </ul>
+            );
+        } catch (error) {
+            console.error('Erro ao parsear itens do pedido:', error);
+            return <span>Erro ao carregar itens.</span>;
+        }
+    };
+
     return (
         <div className="pedidos-container">
             <h2>📬 Pedidos Recebidos</h2>
@@ -120,32 +138,32 @@ const Pedidos = () => {
                                 <tr key={p.id} style={{ borderBottom: '1px solid #333' }}>
                                     <td>{p.nome_cliente}</td>
                                     <td>{p.telefone_cliente}</td>
-                                    <td>{p.cpf}</td>
+                                    <td>{p.cpf_cliente}</td>
                                     <td>{p.tipo_entrega}</td>
                                     <td>
                                         {p.rua}, {p.numero} - {p.bairro}, {p.cidade}<br />
                                         <small>{p.complemento}</small>
                                     </td>
-                                    <td><pre>{p.itens}</pre></td>
+                                    <td>{formatarItens(p.itens)}</td> {/* Modified line here */}
                                     <td>R$ {parseFloat(p.total).toFixed(2)}</td>
                                     <td>{formatarStatus(p.status)}</td>
                                     <td>
                                         <select
                                             value={statusEditando[p.id] || p.status}
                                             onChange={(e) => {
-                                            const novoStatus = e.target.value;
-                                            setStatusEditando((prev) => ({ ...prev, [p.id]: novoStatus }));
-                                            if (novoStatus === 'Cancelado') {
-                                                setMotivos((prev) => ({ ...prev, [p.id]: '' }));
-                                            }
+                                                const novoStatus = e.target.value;
+                                                setStatusEditando((prev) => ({ ...prev, [p.id]: novoStatus }));
+                                                if (novoStatus === 'Cancelado') {
+                                                    setMotivos((prev) => ({ ...prev, [p.id]: '' }));
+                                                }
                                             }}
                                             style={{
-                                            padding: '6px',
-                                            borderRadius: '6px',
-                                            backgroundColor: '#1e1e2f',
-                                            color: '#fff',
-                                            border: '1px solid #555',
-                                            marginBottom: '6px',
+                                                padding: '6px',
+                                                borderRadius: '6px',
+                                                backgroundColor: '#1e1e2f',
+                                                color: '#fff',
+                                                border: '1px solid #555',
+                                                marginBottom: '6px',
                                             }}
                                         >
                                             <option value="Aguardando Aprovação">Aguardando</option>
@@ -155,39 +173,39 @@ const Pedidos = () => {
 
                                         {statusEditando[p.id] === 'Cancelado' && (
                                             <input
-                                            type="text"
-                                            placeholder="Motivo do cancelamento"
-                                            value={motivos[p.id] || ''}
-                                            onChange={(e) =>
-                                                setMotivos((prev) => ({ ...prev, [p.id]: e.target.value }))
-                                            }
-                                            style={{
-                                                width: '100%',
-                                                padding: '6px',
-                                                borderRadius: '6px',
-                                                border: '1px solid #ccc',
-                                                marginBottom: '6px',
-                                                backgroundColor: '#2a2a40',
-                                                color: '#fff',
-                                            }}
+                                                type="text"
+                                                placeholder="Motivo do cancelamento"
+                                                value={motivos[p.id] || ''}
+                                                onChange={(e) =>
+                                                    setMotivos((prev) => ({ ...prev, [p.id]: e.target.value }))
+                                                }
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '6px',
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #ccc',
+                                                    marginBottom: '6px',
+                                                    backgroundColor: '#2a2a40',
+                                                    color: '#fff',
+                                                }}
                                             />
                                         )}
 
                                         <button
                                             onClick={() =>
-                                            atualizarStatus(
-                                                p.id,
-                                                statusEditando[p.id] || p.status,
-                                                statusEditando[p.id] === 'Cancelado' ? motivos[p.id] : ''
-                                            )
+                                                atualizarStatus(
+                                                    p.id,
+                                                    statusEditando[p.id] || p.status,
+                                                    statusEditando[p.id] === 'Cancelado' ? motivos[p.id] : ''
+                                                )
                                             }
                                             style={{
-                                            padding: '6px 12px',
-                                            borderRadius: '6px',
-                                            backgroundColor: '#3b82f6',
-                                            color: '#fff',
-                                            border: 'none',
-                                            cursor: 'pointer',
+                                                padding: '6px 12px',
+                                                borderRadius: '6px',
+                                                backgroundColor: '#3b82f6',
+                                                color: '#fff',
+                                                border: 'none',
+                                                cursor: 'pointer',
                                             }}
                                         >
                                             Enviar
